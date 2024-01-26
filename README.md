@@ -1,1 +1,1 @@
-Copy and paste please
+Copy and paste
