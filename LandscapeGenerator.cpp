@@ -8,8 +8,7 @@ ALandscapeGenerator::ALandscapeGenerator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    Visible.X = 0;
-    Visible.Y = 0;
+
 }
 
 // Called when the game starts or when spawned
@@ -37,6 +36,10 @@ void ALandscapeGenerator::Tick(float DeltaTime)
         Current.X = FMath::TruncToInt(MyCharacter.X/Scale);
         Current.Y = FMath::TruncToInt(MyCharacter.Y/Scale);
 
+        //test calculations
+        float calc1 = FMath::TruncToInt(MyCharacter.X / Scale);
+        float calc2 = FMath::TruncToInt(MyCharacter.Y / Scale);
+
         for(int i = (Distance*-1); i <= Distance; i++)
         {
             X = i;
@@ -45,31 +48,21 @@ void ALandscapeGenerator::Tick(float DeltaTime)
             {
                 Y = j;
 
-                Visible.X = Current.X + X;
-                Visible.Y = Current.Y + Y;
+                Visible.X = Current.X + i;
+                Visible.Y = Current.Y + j;
 
                 if (GeneratedChunkLocations.Contains(Visible))
                 {
-                    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("contains visible")));
-                    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("GeneratedChunkLocations Size: %d"), GeneratedChunkLocations.Num()));
-                    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("not generating chunk")));
-
-                    if (Visible == FChunkPosition()) {
-                        GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("visible has default values")));
-                    }
-                    else {
-                        GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("visible does not have default values ")));
-                    }
+                    //GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("contains visible")));
                 }
                 else 
                 {
-                    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("generating chunk")));
                     SpawnLocation.X = Visible.X * Scale;
                     SpawnLocation.Y = Visible.Y * Scale;
-                    SpawnLocation.Z = 0;
+                    SpawnLocation.Z = 0.0f;
 
                     ADiamondSquare* NewDiamondSquare = GetWorld()->SpawnActor<ADiamondSquare>(ADiamondSquare::StaticClass(), SpawnLocation, SpawnRotation, SpawnInfo);
-                    GEngine->AddOnScreenDebugMessage(-1, 9999.f, FColor::Red, FString::Printf(TEXT("Generated Chunk: %d %d"), Visible.X, Visible.Y));
+
 
                     NewDiamondSquare->Size = this->Size;
                     NewDiamondSquare->Zmultiplier = this->Zmultiplier;
@@ -77,17 +70,17 @@ void ALandscapeGenerator::Tick(float DeltaTime)
                     NewDiamondSquare->Material = this->Material;
                     NewDiamondSquare->VertexDistance = (this->Scale)/(this->Size);
                     NewDiamondSquare->NoiseParameters = this->NoiseParameters;
-                    NewDiamondSquare->Xoffset = (this->Size)/(this->Visible.X);
-                    NewDiamondSquare->Yoffset = (this->Size)/(this->Visible.Y);
+
+                    NewDiamondSquare->Xoffset = Size * Visible.X;
+                    NewDiamondSquare->Yoffset = Size * Visible.Y;
+
+
 
                     NewDiamondSquare->GenerateChunk();
 
-                    //GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("chunk generated")));
 
                     GeneratedChunkLocations.Add(Visible);
-
-                    //GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("GeneratedChunkLocations Size: %d"), GeneratedChunkLocations.Num()));
-
+                    
 
                 }
             }
