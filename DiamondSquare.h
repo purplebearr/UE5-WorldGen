@@ -30,14 +30,16 @@ public:
 	TArray<FNoiseProperties> NoiseParameters;
 
 	int Size = 0;
-	float Zmultiplier = 1.0f;
+	float Zmultiplier = 1000.0f;
 	float Scale = 0;
-	float UVScale = 0;
+	float UVScale = 1;
 	int Distance = 0;
+	UPROPERTY(EditAnywhere);
 	float VertexDistance = 100.0f;
 
 	UPROPERTY(EditAnywhere)
 	float Xoffset = 0.0f;
+	UPROPERTY(EditAnywhere)
 	float Yoffset = 0.0f;
 
 	UCurveFloat* CurveFloat;
@@ -68,18 +70,27 @@ public:
 	virtual void Tick(float DeltaTime) override;
 private:
 
-	float NoiseValueSum = 0;
+	//float NoiseValueSum = 0;
+	UPROPERTY(EditAnywhere);
 	float Z = 0;
 
 	UProceduralMeshComponent* ProceduralMesh;
-	UPROPERTY(EditAnywhere)
 	TArray<FVector> Vertices;
+	TArray<FVector> outVertices;
 	TArray<int> Triangles;
+	TArray<int> outTriangles;
 	TArray<FVector2D> UV0;
+	TArray<FVector2D> outUV0;
+	TArray<FVector2D> localUV0;
 	TArray<FVector> Normals;
+	TArray<FVector> localNormals;
+	TArray<FVector> outNormals;
 	TArray<FProcMeshTangent> Tangents;
+	TArray<FProcMeshTangent> outTangents;
+	TArray<FProcMeshTangent> localTangents;
 	TArray<UFastNoiseWrapper*> Noises;
-	
+	bool extended;
+	int extendedSize;
 
 	void CreateVertices();
 	void CreateTriangles();
