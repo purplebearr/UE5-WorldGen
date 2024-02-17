@@ -45,11 +45,11 @@ void ADiamondSquare::Tick(float DeltaTime)
 void ADiamondSquare::CreateVertices()
 {
     //NoiseValueSum = 0.0f;
-    for (int Xindex = 0; Xindex <= Size; ++Xindex)
+    for (int Xindex = -1; Xindex <= (Size+1); ++Xindex)
     {
         //NoiseValueSum = 0.0f;
 
-        for (int Yindex = 0; Yindex <= Size; ++Yindex)
+        for (int Yindex = -1; Yindex <= (Size+1); ++Yindex)
         {
             float NoiseValueSum = 0.0f;
             for (int32 NoiseIndex2 = 0; NoiseIndex2 < NoiseParameters.Num(); ++NoiseIndex2) {
@@ -82,16 +82,25 @@ void ADiamondSquare::CreateTriangles()
 {
     int Vertex = 0;
 
-    for (int X = 0; X < (Size); X++)
+    if (extended == true) {
+        extendedSize = Size + 2;
+    }
+    else {
+        extendedSize = Size;
+    }
+
+    //extendedSize = Size + 2;
+
+    for (int X = 0; X < (extendedSize); X++) //changed size to extended size
     {
-        for (int Y = 0; Y < (Size); Y++)
+        for (int Y = 0; Y < (extendedSize); Y++)
         {
             Triangles.Add(Vertex); //bottom left
             Triangles.Add(Vertex + 1); //bottom right
-            Triangles.Add(Vertex + Size + 1); //top left
+            Triangles.Add(Vertex + extendedSize + 1); //top left //changed to extended size isntead of size
             Triangles.Add(Vertex + 1); //bottom right
-            Triangles.Add(Vertex + Size + 2); //top right
-            Triangles.Add(Vertex + Size + 1); //top left
+            Triangles.Add(Vertex + extendedSize + 2); //top right
+            Triangles.Add(Vertex + extendedSize + 1); //top left
 
             ++Vertex;
             
@@ -128,15 +137,39 @@ void ADiamondSquare::GenerateChunk()
         Noises[NoiseIndex]->SetupFastNoise(NoiseType, Seed, Frequency, Interpolation, FractalType, FractalOctaves, FractalLacunarity, FractalGain, CellularJitter, CellularDistanceFunction, CellularReturnType);
 
     }
+      extended = true;
       CreateVertices();
       CreateTriangles();
 
       UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UV0, Normals, Tangents);
 
-      ProceduralMesh->CreateMeshSection(0, Vertices, Triangles, Normals, UV0, TArray<FColor>(), Tangents, true);
+      localNormals = Normals;
+      localTangents = Tangents;
+      int localIndex = 0;
+
+      for (int localX = -1; localX <= (Size+1); localX++) {
+          for (int localY = -1; localY <= (Size+1); localY++) {
+              if (localX > -1 && localX <= Size && localY > -1 && localY <= Size){
+                  outVertices.Add(Vertices[localIndex]);
+                  outNormals.Add(localNormals[localIndex]);
+                  outUV0.Add(UV0[localIndex]);
+                  outTangents.Add(localTangents[localIndex]);
+                  localIndex++;
+
+              }
+              else {
+                  localIndex++;
+              }
+
+          }
+      }
+
+      extended = false;
+      Triangles.Empty();
+      CreateTriangles();
+
+      ProceduralMesh->CreateMeshSection(0, outVertices, Triangles, outNormals, outUV0, TArray<FColor>(), outTangents, true);
       ProceduralMesh->SetMaterial(0, Material);
 
       //GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, FString::Printf(TEXT("chunk generated")));
 }
-
-
