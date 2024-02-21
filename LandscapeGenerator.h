@@ -9,9 +9,15 @@
 #include "Math/Vector.h"
 #include "Misc/Crc.h"
 #include "Curves/CurveFloat.h"
+#include "Multithreaded.h"
+#include "MultithreadedLibrary.h"
+
+
 #include "LandscapeGenerator.generated.h"
 
 class UGameplayStatistics;
+class ADiamondSquare;
+
 
 USTRUCT(BlueprintType)
 struct FNoiseProperties
@@ -22,10 +28,10 @@ struct FNoiseProperties
 	EFastNoise_NoiseType NoiseType;
 	
 	UPROPERTY(EditAnywhere)
-	int Seed;// = 1337;
+	int Seed = 1337;
 
 	UPROPERTY(EditAnywhere)
-	float Frequency;// = 0.01f;
+	float Frequency = 0.01f;
 
 	UPROPERTY(EditAnywhere)
 	EFastNoise_Interp Interpolation;
@@ -34,16 +40,16 @@ struct FNoiseProperties
 	EFastNoise_FractalType FractalType;
 
 	UPROPERTY(EditAnywhere)
-	int FractalOctaves;// = 3;
+	int FractalOctaves = 3;
 
 	UPROPERTY(EditAnywhere)
-	float FractalLacunarity;// = 2.0f;
+	float FractalLacunarity = 2.0f;
 
 	UPROPERTY(EditAnywhere)
-	float FractalGain;// = 0.05f;
+	float FractalGain = 0.05f;
 
 	UPROPERTY(EditAnywhere)
-	float CellularJitter;// = 0.45f;
+	float CellularJitter = 0.45f;
 
 	UPROPERTY(EditAnywhere)
 	EFastNoise_CellularDistanceFunction CellularDistanceFunction;
@@ -81,7 +87,7 @@ FORCEINLINE uint32 GetTypeHash(const FChunkPosition& Thing)
 }
 
 UCLASS()
-class PROJECTV6_API ALandscapeGenerator : public AActor
+class PROJECTV6_API ALandscapeGenerator : public AActor, public IMultithreaded
 {
 	GENERATED_BODY()
 	
@@ -112,8 +118,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<FNoiseProperties> NoiseParameters;
 
-	
-	
+	TMap<FChunkPosition, ADiamondSquare*> GeneratedChunks;
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -128,6 +136,8 @@ private:
 	FChunkPosition Current;
 	FChunkPosition Visible;
 
+	TArray<FChunkPosition> ChunksToHide;
+
 
 	TSet<FChunkPosition> GeneratedChunkLocations;
 
@@ -137,13 +147,20 @@ private:
 	int X = 0;
 	int Y = 0;
 
+	UPROPERTY(EditAnywhere)
+	float MaxChunkDistance = 100000.0f;
+
 	FVector MyCharacter;
 
-	FRotator SpawnRotation;
-	FVector SpawnLocation;
+	FRotator SpawnRotation = FRotator(0.0f, 0.0f, 0.0f);
+	FVector SpawnLocation = FVector(0.0f, 0.0f, 0.0f);
 
 	FActorSpawnParameters SpawnInfo;
 
 	TSubclassOf<class ADiamondSquare> MyBlueprintClass;
 
+	FTimerHandle TimerHandle;
+	UPROPERTY(EditAnywhere)
+	float TimerInterval = 5.0f;
+	void TimerTick();
 };
