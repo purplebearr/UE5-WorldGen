@@ -2,6 +2,7 @@
 #include "ProceduralMeshComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "FastNoiseWrapper.h"
+#include "PCGComponent.h"
 #include "LandscapeGenerator.h"
 
 
@@ -16,6 +17,18 @@ ADiamondSquare::ADiamondSquare()
     ProceduralMesh->SetupAttachment(GetRootComponent());
 
     fastNoiseWrapper = CreateDefaultSubobject<UFastNoiseWrapper>(TEXT("FastNoiseWrapper"));
+
+    Tags.Add(FName("World"));
+
+    PCGComponent = CreateDefaultSubobject<UPCGComponent>(TEXT("PCGComponent"));
+    //PCGComponent->SetupAttachment(GetRootComponent()); // Attach to the root component
+
+
+    //PCGComponent = CreateDefaultSubobject<UPCGComponent>(TEXT("PCG"));
+
+    //PCGComponent = CreateDefaultSubobject<UPCGComponent>(TEXT("PCGComponent"));
+    //PCGComponent->SetupAttachment(GetRootComponent());
+    
 
 }
 
@@ -134,6 +147,10 @@ void ADiamondSquare::GenerateChunk()
         CellularReturnType = CurrentNoiseProperty.CellularReturnType;
         CurveFloat = CurrentNoiseProperty.CurveFloat;
 
+        PCGComponent->SetGraph((CurrentNoiseProperty.PCGGraph));
+
+        //pcg graph set???
+
         Noises[NoiseIndex]->SetupFastNoise(NoiseType, Seed, Frequency, Interpolation, FractalType, FractalOctaves, FractalLacunarity, FractalGain, CellularJitter, CellularDistanceFunction, CellularReturnType);
 
     }
@@ -168,8 +185,45 @@ void ADiamondSquare::GenerateChunk()
       Triangles.Empty();
       CreateTriangles();
 
-      ProceduralMesh->CreateMeshSection(0, outVertices, Triangles, outNormals, outUV0, TArray<FColor>(), outTangents, true);
-      ProceduralMesh->SetMaterial(0, Material);
+      //ProceduralMesh->SetCollisionObjectType(ECC_WorldStatic);
 
-      //GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, FString::Printf(TEXT("chunk generated")));
+      ProceduralMesh->CreateMeshSection(0, outVertices, Triangles, outNormals, outUV0, TArray<FColor>(), outTangents, true);
+      //ProceduralMesh->SetCollisionProfileName(TEXT("BlockAll"));
+
+      ProceduralMesh->SetMaterial(0, Material);
+      PCGComponent->Generate();
+
+      //if (GEngine)
+      //{
+      //    // Check if Generate Overlap Events is on
+      //    bool bIsOverlap = ProceduralMesh->GetGenerateOverlapEvents();
+      //    FString OverlapStatus = bIsOverlap ? TEXT("On") : TEXT("Off");
+
+      //    // Get the current collision profile name
+      //    FName CollisionProfileName = ProceduralMesh->GetCollisionProfileName();
+
+      //    // Get the collision object type
+      //    ECollisionChannel CollisionObjectType = ProceduralMesh->GetCollisionObjectType();
+      //    FString CollisionObjectTypeStr = UEnum::GetValueAsString(CollisionObjectType);
+
+      //    // Get the actor tags
+      //    FString ActorTags;
+      //    for (const auto& Tag : ProceduralMesh->GetOwner()->Tags)
+      //    {
+      //        ActorTags += Tag.ToString() + TEXT(", ");
+      //    }
+      //    // Remove the trailing comma and space
+      //    if (!ActorTags.IsEmpty())
+      //    {
+      //        ActorTags.RemoveAt(ActorTags.Len() - 2);
+      //    }
+
+      //    // Create the debug message
+      //    FString DebugMessage = FString::Printf(TEXT("Generate Overlap Events: %s, Collision Profile: %s, Collision Object Type: %s, Actor Tags: %s"), *OverlapStatus, *CollisionProfileName.ToString(), *CollisionObjectTypeStr, *ActorTags);
+
+      //    // Display the message on screen
+      //    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, DebugMessage);
+      //}
+
+
 }
