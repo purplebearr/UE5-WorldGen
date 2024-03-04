@@ -7,6 +7,8 @@
 #include "ProceduralMeshComponent.h"
 #include "FastNoiseWrapper.h"
 #include "LandscapeGenerator.h"
+//#include "PCGComponent1.h"
+#include "PCGComponent.h"
 #include "DiamondSquare.generated.h"
 
 
@@ -15,6 +17,7 @@ class UMaterialInterface;
 class UFastNoiseWrapper;
 
 struct FProcMeshTangent;
+
 
 UCLASS()
 class PROJECTV6_API ADiamondSquare : public AActor
@@ -56,6 +59,12 @@ public:
 	EFastNoise_CellularDistanceFunction CellularDistanceFunction;
 	EFastNoise_CellularReturnType CellularReturnType;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PCG")
+	UPCGComponent* PCGComponent;
+
+
+
+
 	void GenerateChunk();
 
 protected:
@@ -64,6 +73,9 @@ protected:
 
 	UFastNoiseWrapper* fastNoiseWrapper = nullptr;
 	float Noise2D = 0.0f;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	//class UPCGComponent* PCGComponent; // Declare the PCG component
 
 public:
 	// Called every frame
@@ -91,6 +103,8 @@ private:
 	TArray<UFastNoiseWrapper*> Noises;
 	bool extended;
 	int extendedSize;
+
+
 
 	void CreateVertices();
 	void CreateTriangles();
