@@ -11,7 +11,7 @@
 #include "Curves/CurveFloat.h"
 #include "Multithreaded.h"
 #include "MultithreadedLibrary.h"
-
+#include"PCGComponent.h"
 
 #include "LandscapeGenerator.generated.h"
 
@@ -59,6 +59,9 @@ struct FNoiseProperties
 
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* CurveFloat;
+
+	UPROPERTY(EditAnywhere)
+	UPCGGraphInterface* PCGGraph;
 
 	FNoiseProperties()
 	{
